@@ -6,3 +6,5 @@ sqlalchemy==2.0.29
 sqlite4==0.1.1
 passlib[bcrypt]==1.7.4
 python-jose[cryptography]==3.3.0
+alembic~=1.13.1
+requests~=2.31.0

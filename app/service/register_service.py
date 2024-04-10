@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app import models, security
-from jose import JWTError, jwt
+from jose import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
