@@ -1,0 +1,17 @@
+from typing import Union
+
+from pydantic import BaseModel
+
+
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+
+
+class UserOutput(BaseModel):
+    username: str
+    email: str
+
+    class Config:
+        orm_mode = True
