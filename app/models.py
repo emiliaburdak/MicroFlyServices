@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Float
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, Float, Time, DateTime
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -19,4 +20,13 @@ class Flight(Base):
     departure = Column(String, index=True)
     destination = Column(String, index=True)
     date = Column(Date, index=True)
+    time_departure = Column(Time, index=True)
+    time_arrival = Column(Time, index=True)
+    flight_time = Column(Integer, index=True)
+    id_arrival_next_day = Column(Integer)
+    is_dreamliner = Column(Boolean, default=False)
+    checked_baggage = Column(Boolean)
+    hand_luggage = Column(Boolean)
+    food = Column(Boolean)
     price = Column(Float, index=True)
+    update_data = Column(DateTime, default=datetime.utcnow)
