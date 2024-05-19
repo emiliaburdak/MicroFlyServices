@@ -81,7 +81,7 @@ def fetch_flights(departure: str, destination: str, month: int, year: int) -> Li
     return flights
 
 
-def save_flights_to_database(flights, db: Session = Depends(get_db)):
+def save_flights_to_database(flights, db: Session):
     try:
         db.add_all(flights)
         db.commit()
@@ -90,12 +90,14 @@ def save_flights_to_database(flights, db: Session = Depends(get_db)):
         print(f"An error occurred while saving to the database: {e}")
 
 
-def update_records(flights, db: Session = Depends(get_db)):
+def update_records(flights, db: Session):
     for flight in flights:
-        existing_flight = db.query(Flight).filter(data=flight.data,
-                                                  destination=flight.destination,
-                                                  deparure=flight.departure
-                                                  ).first()
+        existing_flight = db.query(Flight).filter(
+            Flight.date == flight.date,
+            Flight.destination == flight.destination,
+            Flight.departure == flight.departure
+        ).first()
+
         if existing_flight:
             existing_flight.time_departure = flight.time_departure
             existing_flight.time_arrival = flight.time_arrival
