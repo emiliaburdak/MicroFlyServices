@@ -1,5 +1,13 @@
 fastapi[all]==0.110.1
+pytest==7.4.4
+python-dotenv==1.0.1
 pydantic==2.5.2
 sqlalchemy==2.0.29
 sqlite4==0.1.1
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
 alembic~=1.13.1
+requests~=2.31.0
+
+starlette~=0.37.2
+python-dateutil~=2.9.0.post0
