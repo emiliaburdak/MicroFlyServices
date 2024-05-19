@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app import models
-from .database import engine
+from app.database import engine
 
 from app.routes.register_route import router as register_route
 from app.routes.scrap_route import router as scrap_route
