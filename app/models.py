@@ -22,7 +22,7 @@ class Flight(Base):
     date = Column(Date, index=True)
     time_departure = Column(Time, index=True)
     time_arrival = Column(Time, index=True)
-    flight_time = Column(Integer, index=True)
+    flight_time = Column(String, index=True)
     id_arrival_next_day = Column(Integer)
     is_dreamliner = Column(Boolean, default=False)
     checked_baggage = Column(Boolean)
