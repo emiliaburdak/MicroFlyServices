@@ -347,3 +347,9 @@ pyrightconfig.json
 /.idea/vcs.xml
 /.idea/warehouse.iml
 /.idea/dataSources.xml
+
+
+
+
+*.db
+*/*.db
