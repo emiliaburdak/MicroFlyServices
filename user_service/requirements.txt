@@ -11,3 +11,5 @@ requests~=2.31.0
 
 starlette~=0.37.2
 python-dateutil~=2.9.0.post0
+
+faststream~=0.5.7

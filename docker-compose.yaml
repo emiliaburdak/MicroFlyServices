@@ -1,0 +1,63 @@
+version: '3'
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+
+  flight_service:
+    build:
+      context: ./flight_service
+    ports:
+      - '8001:8001'
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+  booking_service:
+    build:
+      context: ./booking_service
+    ports:
+      - '8002:8002'
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+  user_service:
+    build:
+      context: ./user_service
+    ports:
+      - '8003:8003'
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+
+  gateway_service:
+    build:
+      context: ./gateway_service
+    ports:
+      - '8080:8080'
+    depends_on:
+      - flight_service
+      - booking_service
+      - user_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
