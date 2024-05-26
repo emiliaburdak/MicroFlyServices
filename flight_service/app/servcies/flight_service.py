@@ -2,8 +2,8 @@ from typing import List
 import requests
 from sqlalchemy.orm import Session
 from starlette import status
-from flight_service.app.database import SessionLocal
-from flight_service.app.models import Flight
+from ..database import SessionLocal
+from ..models import Flight
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 

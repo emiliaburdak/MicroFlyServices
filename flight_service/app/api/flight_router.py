@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
-from flight_service.app.database import SessionLocal
+from ..database import SessionLocal
 from datetime import date, timedelta
 from typing import List
 from sqlalchemy import extract
 from sqlalchemy.orm import Session
-from flight_service.app.schema import FlightSchema
-from flight_service.app.servcies.flight_service import fetch_flights, extract_months, save_flights_to_database, update_records
+from ..schema import FlightSchema
+from ..servcies.flight_service import fetch_flights, extract_months, save_flights_to_database, update_records
 from datetime import datetime
-from flight_service.app.models import Flight
+from ..models import Flight
 
 router = APIRouter()
 
