@@ -1,10 +1,10 @@
 from dotenv import load_dotenv
-
-from flight_service.app.database import SessionLocal
+from ..database import SessionLocal
 from jose import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 import os
+
 
 load_dotenv()
 

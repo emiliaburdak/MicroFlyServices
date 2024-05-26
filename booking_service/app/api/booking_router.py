@@ -1,14 +1,14 @@
 import json
 from datetime import datetime
-from typing import List
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from booking_service.app.database import SessionLocal
-from booking_service.app.models import CartItem, PurchasedFlight
-from booking_service.app.schema import FlightSchema
-from booking_service.app.services.booking_service import get_current_user_id
-from booking_service.app.services.kafka_events_utils import send_event
 
+from ..database import SessionLocal
+from ..models import CartItem, PurchasedFlight
+from ..schema import FlightSchema
+from ..services.booking_service import get_current_user_id
+from ..services.kafka_events_utils import send_event
 
 router = APIRouter()
 
