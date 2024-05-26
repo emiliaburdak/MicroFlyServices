@@ -9,6 +9,13 @@ from ..models import CartItem, PurchasedFlight
 from ..schema import FlightSchema
 from ..services.booking_service import get_current_user_id
 from ..services.kafka_events_utils import send_event
+from ..services.payment_service import simulate_payment
+
+from faststream.annotations import FastStream
+from faststream.kafka import KafkaBroker
+
+broker = KafkaBroker("localhost:9092")
+app = FastStream(broker)
 
 router = APIRouter()
 
@@ -39,7 +46,8 @@ async def add_to_cart(flight_id: int, user_id: int = Depends(get_current_user_id
 
 
 @router.delete("/remove_from_cart/")
-async def remove_from_cart(cart_item_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+async def remove_from_cart(cart_item_id: int, user_id: int = Depends(get_current_user_id),
+                           db: Session = Depends(get_db)):
     item = db.query(CartItem).filter(CartItem.id == cart_item_id, CartItem.user_id == user_id).one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Flight not found")
@@ -64,21 +72,47 @@ def view_cart(user_id: int = Depends(get_current_user_id), db: Session = Depends
 
 
 @router.post("/purchase/")
-async def purchase(flight_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    cart_items = db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).first()
+async def purchase(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    cart_items = db.query(CartItem).filter(CartItem.user_id == user_id).all()
     if not cart_items:
         raise HTTPException(status_code=404, detail="No items in cart to purchase")
-    purchased_flight = PurchasedFlight(user_id=user_id, flight_id=flight_id)
-    db.add(purchased_flight)
-    db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
-    db.commit()
 
+    # send event for event sourcing
+    flights_ids = [cart_item.flight_id for cart_item in cart_items]
     event = json.dumps({
-        "type": "FlightPurchased",
+        "type": "PurchaseRequest",
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
-        "flight_id": flight_id
+        "flights_ids": flights_ids,
     })
-    await send_event("booking-events", event)
+    await send_event("purchase-request-event", event)
 
-    return {"message": "You have purchased flight!"}
+    # payment simulator
+    await simulate_payment(user_id, flights_ids)
+
+
+# consume event from kafka
+@broker.subscriber("payment-response-event")
+async def handle_payment_response(event):
+    payment_response = json.loads(event)
+    if payment_response["type"] == "PaymentSucceeded":
+        return await finalize_purchase(payment_response)
+    elif payment_response["type"] == "PaymentFailed":
+        return await handle_payment_failure()
+
+
+async def finalize_purchase(payment_response, db: Session = Depends(get_db)):
+    user_id = payment_response["user_id"]
+    flights_ids = payment_response["flights_ids"]
+    for flight_id in flights_ids:
+        purchased_flights = PurchasedFlight(user_id=user_id, flight_id=flight_id)
+        db.add(purchased_flights)
+        db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
+    db.commit()
+    return "Payment succeeded!"
+
+
+async def handle_payment_failure():
+    return "Payment failed, no purchase made."
+
+
