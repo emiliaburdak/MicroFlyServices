@@ -1,7 +1,7 @@
 import random
 
 from ..database import get_db
-from ..models import PurchasedFlight
+from ..models import PurchasedFlight, CartItem
 from ..services.kafka_events_utils import kafka_router
 
 
@@ -29,3 +29,14 @@ async def update_payment_status_in_db(user_id, purchase_ids, new_payment_status,
         db.add(purchased_flight)
 
     db.commit()
+
+
+async def save_purchases_with_pending_payment(user_id, flights_ids, db):
+    purchase_ids = []
+    for flight_id in flights_ids:
+        purchased_flights = PurchasedFlight(user_id=user_id, flight_id=flight_id, payment_status='pending')
+        db.add(purchased_flights)
+        purchase_ids.append(flight_id)
+        db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
+    db.commit()
+    return purchase_ids

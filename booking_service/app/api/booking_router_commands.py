@@ -8,6 +8,7 @@ from ..database import get_db
 from ..models import CartItem, PurchasedFlight
 from ..services.booking_service import get_current_user_id
 from ..services.kafka_events_utils import send_to_kafka
+from ..services.payment_service import save_purchases_with_pending_payment
 
 router = APIRouter()
 
@@ -78,13 +79,3 @@ async def purchase(user_id: int = Depends(get_current_user_id), db: Session = De
 
     return "Purchase received, payment is going to be processed soon"
 
-
-async def save_purchases_with_pending_payment(user_id, flights_ids, db: Session = Depends(get_db)):
-    purchase_ids = []
-    for flight_id in flights_ids:
-        purchased_flights = PurchasedFlight(user_id=user_id, flight_id=flight_id, payment_status='pending')
-        db.add(purchased_flights)
-        purchase_ids.append(flight_id)
-        db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
-    db.commit()
-    return purchase_ids
