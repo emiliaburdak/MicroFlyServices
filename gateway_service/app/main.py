@@ -14,7 +14,7 @@ async def proxy(service: str, path: str, request: Request):
     if service not in SERVICE_URLS:
         raise HTTPException(status_code=404, detail="Service not found")
 
-    url = f"{SERVICE_URLS[service]}/{path}"
+    url = f"{SERVICE_URLS[service]}/{path}/"
     async with httpx.AsyncClient() as client:
         resp = await client.request(
             method=request.method,
