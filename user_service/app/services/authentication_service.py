@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from user_service.app import models
-from user_service.app.services import security
+from .. import models
+from . import security
 from jose import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv

@@ -1,10 +1,10 @@
-from user_service.app.database import SessionLocal
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from user_service.app.services import security
-from user_service.app import models, schema
+from ..database import SessionLocal
+from ..services import security
+from .. import models, schema
+from ..services.authentication_service import authenticate_user, create_access_token
 from fastapi.security import OAuth2PasswordRequestForm
-from user_service.app.services.authentication_service import authenticate_user, create_access_token
 
 router = APIRouter()
 
