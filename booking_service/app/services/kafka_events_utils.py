@@ -1,30 +1,16 @@
-from faststream import FastStream
-from faststream.kafka import KafkaBroker
+import os
+
 from faststream.kafka.fastapi import KafkaRouter
 
-# kafka_router = KafkaRouter("localhost:9092")
-broker = KafkaBroker("kafka:9092")
-app = FastStream(broker)
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+kafka_router = KafkaRouter(KAFKA_BOOTSTRAP_SERVERS)
 
 
-# def get_kafka_broker():
-#     return broker
+@kafka_router.subscriber("booking-events")
+async def handle_msg(msg: str):
+    print('Received message: {}'.format(msg))
 
 
-@broker.publisher("booking-events")
-async def handle_msg(msg: str) -> str:
-    return msg
-
-
-async def send_event(topic, event):
-    # broker = get_kafka_broker()
-    # await broker.connect()
-    await handle_msg(event)
-    # try:
-    #     print(f'going to send for {topic}: {event}')
-    #     result = await broker.publish(message=event, topic=topic)
-    #     print(result)
-    # except Exception as e:
-    #     print(f"Error publishing event: {e}")
-    # finally:
-    #     await broker.close()
+async def send_event(topic, msg):
+    print(f'Going to send message for topic: {topic}; message: {msg}')
+    await kafka_router.broker.publish(message=msg, topic=topic)
