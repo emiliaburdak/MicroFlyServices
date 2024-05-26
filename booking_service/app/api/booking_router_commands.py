@@ -1,12 +1,9 @@
 import json
 from datetime import datetime
-
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-
 from ..database import SessionLocal
 from ..models import CartItem, PurchasedFlight
-from ..schema import FlightSchema
 from ..services.booking_service import get_current_user_id
 from ..services.kafka_events_utils import send_event
 from ..services.payment_service import simulate_payment
@@ -65,12 +62,6 @@ async def remove_from_cart(cart_item_id: int, user_id: int = Depends(get_current
     return {"message": "Flight removed from cart"}
 
 
-@router.get("/view_cart/", response_model=list[FlightSchema])
-def view_cart(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    cart_flights = db.query(CartItem).filter(CartItem.user_id == user_id).all()
-    return cart_flights
-
-
 @router.post("/purchase/")
 async def purchase(user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
     cart_items = db.query(CartItem).filter(CartItem.user_id == user_id).all()
@@ -87,8 +78,8 @@ async def purchase(user_id: int = Depends(get_current_user_id), db: Session = De
     })
     await send_event("purchase-request-event", event)
 
-    # payment simulator
     await simulate_payment(user_id, flights_ids)
+    return "Purchase received, going to be processed"
 
 
 # consume event from kafka
@@ -96,9 +87,7 @@ async def purchase(user_id: int = Depends(get_current_user_id), db: Session = De
 async def handle_payment_response(event):
     payment_response = json.loads(event)
     if payment_response["type"] == "PaymentSucceeded":
-        return await finalize_purchase(payment_response)
-    elif payment_response["type"] == "PaymentFailed":
-        return await handle_payment_failure()
+        await finalize_purchase(payment_response)
 
 
 async def finalize_purchase(payment_response, db: Session = Depends(get_db)):
@@ -109,10 +98,3 @@ async def finalize_purchase(payment_response, db: Session = Depends(get_db)):
         db.add(purchased_flights)
         db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
     db.commit()
-    return "Payment succeeded!"
-
-
-async def handle_payment_failure():
-    return "Payment failed, no purchase made."
-
-
