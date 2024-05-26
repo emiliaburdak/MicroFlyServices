@@ -14,3 +14,4 @@ class PurchasedFlight(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
     flight_id = Column(Integer)
+    payment_status = Column(String)

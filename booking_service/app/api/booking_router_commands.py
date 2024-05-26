@@ -1,28 +1,15 @@
 import json
 from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from ..database import SessionLocal
+
+from ..database import get_db
 from ..models import CartItem, PurchasedFlight
 from ..services.booking_service import get_current_user_id
-from ..services.kafka_events_utils import send_event
-from ..services.payment_service import simulate_payment
-
-from faststream.annotations import FastStream
-from faststream.kafka import KafkaBroker
-
-broker = KafkaBroker("localhost:9092")
-app = FastStream(broker)
+from ..services.kafka_events_utils import send_to_kafka
 
 router = APIRouter()
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.post("/add_to_cart/")
@@ -37,7 +24,7 @@ async def add_to_cart(flight_id: int, user_id: int = Depends(get_current_user_id
         "user_id": user_id,
         "flight_id": flight_id
     })
-    await send_event("booking-events", event)
+    await send_to_kafka("booking-events", event)
 
     return {"message": "Flight added to cart"}
 
@@ -57,7 +44,7 @@ async def remove_from_cart(cart_item_id: int, user_id: int = Depends(get_current
         "user_id": user_id,
         "cart_item_id": cart_item_id
     })
-    await send_event("booking-events", event)
+    await send_to_kafka("booking-events", event)
 
     return {"message": "Flight removed from cart"}
 
@@ -68,33 +55,36 @@ async def purchase(user_id: int = Depends(get_current_user_id), db: Session = De
     if not cart_items:
         raise HTTPException(status_code=404, detail="No items in cart to purchase")
 
-    # send event for event sourcing
     flights_ids = [cart_item.flight_id for cart_item in cart_items]
+    purchase_ids = await save_purchases_with_pending_payment(user_id=user_id, flights_ids=flights_ids, db=db)
+
+    # send event for event sourcing
     event = json.dumps({
         "type": "PurchaseRequest",
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
         "flights_ids": flights_ids,
     })
-    await send_event("purchase-request-event", event)
+    await send_to_kafka(topic="purchase-event", msg=event)
 
-    await simulate_payment(user_id, flights_ids)
-    return "Purchase received, going to be processed"
+    # send msg to process payment
+    process_payment_request = json.dumps({
+        "type": "ProcessPayment",
+        "timestamp": datetime.utcnow().isoformat(),
+        "user_id": user_id,
+        "purchase_ids": purchase_ids
+    })
+    await send_to_kafka(topic='payment-request', msg=process_payment_request)
+
+    return "Purchase received, payment is going to be processed soon"
 
 
-# consume event from kafka
-@broker.subscriber("payment-response-event")
-async def handle_payment_response(event):
-    payment_response = json.loads(event)
-    if payment_response["type"] == "PaymentSucceeded":
-        await finalize_purchase(payment_response)
-
-
-async def finalize_purchase(payment_response, db: Session = Depends(get_db)):
-    user_id = payment_response["user_id"]
-    flights_ids = payment_response["flights_ids"]
+async def save_purchases_with_pending_payment(user_id, flights_ids, db: Session = Depends(get_db)):
+    purchase_ids = []
     for flight_id in flights_ids:
-        purchased_flights = PurchasedFlight(user_id=user_id, flight_id=flight_id)
+        purchased_flights = PurchasedFlight(user_id=user_id, flight_id=flight_id, payment_status='pending')
         db.add(purchased_flights)
+        purchase_ids.append(flight_id)
         db.query(CartItem).filter(CartItem.user_id == user_id, CartItem.flight_id == flight_id).delete()
     db.commit()
+    return purchase_ids
