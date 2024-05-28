@@ -5,8 +5,9 @@ from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import CartItem, PurchasedFlight
+from ..models import CartItem
 from ..services.booking_service import get_current_user_id
+from ..services.cart_service import add_flight_to_cart
 from ..services.kafka_events_utils import send_to_kafka
 from ..services.payment_service import save_purchases_with_pending_payment
 
@@ -15,17 +16,7 @@ router = APIRouter()
 
 @router.post("/add_to_cart/")
 async def add_to_cart(flight_id: int, user_id: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    cart_item = CartItem(user_id=user_id, flight_id=flight_id)
-    db.add(cart_item)
-    db.commit()
-
-    event = json.dumps({
-        "type": "CartAdded",
-        "timestamp": datetime.utcnow().isoformat(),
-        "user_id": user_id,
-        "flight_id": flight_id
-    })
-    await send_to_kafka("booking-events", event)
+    await add_flight_to_cart(db, flight_id, user_id)
 
     return {"message": "Flight added to cart"}
 

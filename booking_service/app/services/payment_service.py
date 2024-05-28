@@ -1,6 +1,6 @@
 import random
 
-from ..api.booking_router_commands import add_to_cart
+from .cart_service import add_flight_to_cart
 from ..database import get_db
 from ..models import PurchasedFlight, CartItem
 from ..services.kafka_events_utils import kafka_router
@@ -24,7 +24,7 @@ async def recreate_cart(db, msg):
             PurchasedFlight.id == purchase_id
         ).first()
         flight_id = purchased_flight.flight_id
-        await add_to_cart(flight_id, msg.user_id, db=get_db())
+        await add_flight_to_cart(get_db(), flight_id, msg.user_id)
 
 
 async def simulate_payment_status() -> str:
