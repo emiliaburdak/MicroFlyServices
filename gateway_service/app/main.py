@@ -4,8 +4,9 @@ import httpx
 app = FastAPI()
 
 SERVICE_URLS = {
-    "user_service": "http://localhost:8000",
-    "flight_service": "http://localhost:8001"
+    "user_service": "http://user_service:8003",
+    "flight_service": "http://flight_service:8001",
+    "booking_service": "http://booking_service:8002"
 }
 
 
