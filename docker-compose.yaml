@@ -47,12 +47,18 @@ services:
       - kafka
     environment:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ALGORITHM=HS256
+      - USER_KEY=dev-user-super-secret-key
 
   user_service:
     build:
       context: ./user_service
     ports:
       - '8003:8003'
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=43200
+      - ALGORITHM=HS256
+      - SECRET_KEY=dev-user-super-secret-key
 
   gateway_service:
     build:
