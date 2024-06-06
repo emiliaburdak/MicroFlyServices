@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    deploy:
+      replicas: 1
+
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    deploy:
+      replicas: 1
+
+  kafka-ui:
+    image: 'provectuslabs/kafka-ui:latest'
+    ports:
+      - '8080:8080'
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+    deploy:
+      replicas: 1
+
+  flight_service:
+    image: 'burdakemilia/distribiutedflighttracker-flight_service:latest'
+    ports:
+      - '8001:8001'
+    deploy:
+      replicas: 1
+
+  booking_service:
+    image: 'burdakemilia/distribiutedflighttracker-booking_service:latest'
+    ports:
+      - '8002:8002'
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - ALGORITHM=HS256
+      - USER_KEY=dev-user-super-secret-key
+    deploy:
+      replicas: 1
+
+  user_service:
+    image: 'burdakemilia/distribiutedflighttracker-user_service:latest'
+    ports:
+      - '8003:8003'
+    environment:
+      - ACCESS_TOKEN_EXPIRE_MINUTES=43200
+      - ALGORITHM=HS256
+      - SECRET_KEY=dev-user-super-secret-key
+    deploy:
+      replicas: 1
+
+  gateway_service:
+    image: 'burdakemilia/distribiutedflighttracker-gateway_service:latest'
+    ports:
+      - '8000:8000'
+    deploy:
+      replicas: 1
+
+networks:
+  default:
+    external:
+      name: my-overlay-network
