@@ -1,6 +1,9 @@
 from fastapi import FastAPI, Request, HTTPException
 import httpx
 
+from fastapi.staticfiles import StaticFiles
+
+
 app = FastAPI()
 
 SERVICE_URLS = {
@@ -9,11 +12,13 @@ SERVICE_URLS = {
     "booking_service": "http://booking_service:8002"
 }
 
+app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
+
 
 @app.api_route("/{service}/{path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy(service: str, path: str, request: Request):
     if service not in SERVICE_URLS:
-        raise HTTPException(status_code=404, detail="Service not found")
+        raise HTTPException(status_code=404, detail="Service not found!")
 
     url = f"{SERVICE_URLS[service]}/{path}/"
     async with httpx.AsyncClient() as client:
