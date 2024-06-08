@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>System Śledzenia Lotów - Użytkownik</title>
+</head>
+<body>
+    <h1>System Śledzenia Lotów</h1>
+
+    <!-- Formularz rejestracji -->
+    <h2>Rejestracja</h2>
+    <form id="registerForm" method="POST" onsubmit="return false;">
+        <input type="text" id="username" placeholder="Nazwa użytkownika" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Hasło" required>
+        <button type="button" onclick="registerUser()">Zarejestruj się</button>
+    </form>
+    <div id="registerResult"></div>
+
+    <!-- Formularz logowania -->
+    <h2>Logowanie</h2>
+    <form id="loginForm" method="POST" onsubmit="return false;">
+        <input type="text" id="loginUsername" placeholder="Nazwa użytkownika" required>
+        <input type="password" id="loginPassword" placeholder="Hasło" required>
+        <button type="button" onclick="loginUser()">Zaloguj się</button>
+    </form>
+    <div id="loginResult"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
