@@ -1,0 +1,56 @@
+CREATE TABLE flight (
+    id SERIAL PRIMARY KEY,
+    departure VARCHAR(255) NOT NULL,
+    destination VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    time_departure TIME NOT NULL,
+    time_arrival TIME NOT NULL,
+    flight_time VARCHAR(255) NOT NULL,
+    id_arrival_next_day INTEGER,
+    is_dreamliner BOOLEAN DEFAULT FALSE,
+    checked_baggage BOOLEAN,
+    hand_luggage BOOLEAN,
+    food BOOLEAN,
+    price REAL NOT NULL,
+    update_data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_flight_departure ON flight (departure);
+CREATE INDEX idx_flight_destination ON flight (destination);
+CREATE INDEX idx_flight_date ON flight (date);
+CREATE INDEX idx_flight_time_departure ON flight (time_departure);
+CREATE INDEX idx_flight_time_arrival ON flight (time_arrival);
+CREATE INDEX idx_flight_flight_time ON flight (flight_time);
+CREATE INDEX idx_flight_price ON flight (price);
+
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    hashed_password VARCHAR(255) NOT NULL
+);
+
+CREATE INDEX idx_users_username ON users (username);
+CREATE INDEX idx_users_email ON users (email);
+
+
+CREATE TABLE cart_items (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    flight_id INTEGER NOT NULL
+);
+
+CREATE INDEX idx_cart_items_user_id ON cart_items (user_id);
+CREATE INDEX idx_cart_items_flight_id ON cart_items (flight_id);
+
+
+CREATE TABLE purchased_flights (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    flight_id INTEGER NOT NULL,
+    payment_status VARCHAR(255) NOT NULL
+);
+
+CREATE INDEX idx_purchased_flights_user_id ON purchased_flights (user_id);
+CREATE INDEX idx_purchased_flights_flight_id ON purchased_flights (flight_id);
