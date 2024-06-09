@@ -69,3 +69,5 @@ services:
       - flight_service
       - booking_service
       - user_service
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
