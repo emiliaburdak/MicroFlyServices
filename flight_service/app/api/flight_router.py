@@ -45,3 +45,9 @@ def search(departure: str, destination: str, date_start: date, date_end: date,
         Flight.date <= date_end,
     ).all()
     return flights
+
+
+@router.get("/flight_details/")
+def get_flight_details(flight_id: int, db: Session = Depends(get_db)):
+    flight = db.query(Flight).filter(Flight.id == flight_id).first()
+    return flight
