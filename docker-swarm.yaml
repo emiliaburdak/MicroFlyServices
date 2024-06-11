@@ -4,7 +4,7 @@ services:
   zookeeper:
     image: 'bitnami/zookeeper:latest'
     ports:
-      - '2181:2181'
+      - '16708:16708'
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
     deploy:
@@ -13,11 +13,11 @@ services:
   kafka:
     image: 'bitnami/kafka:latest'
     ports:
-      - '9092:9092'
+      - '17229:17229'
     environment:
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:16708
+      - KAFKA_LISTENERS=PLAINTEXT://:17229
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:17229
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - ALLOW_PLAINTEXT_LISTENER=yes
     deploy:
@@ -26,27 +26,27 @@ services:
   kafka-ui:
     image: 'provectuslabs/kafka-ui:latest'
     ports:
-      - '8080:8080'
+      - '18538:18538'
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:17229
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:16708
     deploy:
       replicas: 1
 
   flight_service:
     image: 'burdakemilia/distribiutedflighttracker-flight_service:latest'
     ports:
-      - '8001:8001'
+      - '16709:16709'
     deploy:
       replicas: 1
 
   booking_service:
     image: 'burdakemilia/distribiutedflighttracker-booking_service:latest'
     ports:
-      - '8002:8002'
+      - '17230:17230'
     environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:17229
       - ALGORITHM=HS256
       - USER_KEY=dev-user-super-secret-key
     deploy:
@@ -55,7 +55,7 @@ services:
   user_service:
     image: 'burdakemilia/distribiutedflighttracker-user_service:latest'
     ports:
-      - '8003:8003'
+      - '18539:18539'
     environment:
       - ACCESS_TOKEN_EXPIRE_MINUTES=43200
       - ALGORITHM=HS256
@@ -66,7 +66,7 @@ services:
   gateway_service:
     image: 'burdakemilia/distribiutedflighttracker-gateway_service:latest'
     ports:
-      - '8000:8000'
+      - '16710:16710'
     deploy:
       replicas: 1
 
