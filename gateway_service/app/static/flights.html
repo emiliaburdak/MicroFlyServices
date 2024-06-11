@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flights</title>
+    <style>
+        body{
+            margin: 0;
+            font-family: sans-serif;
+        }
+        .content{
+            padding: 2%;
+        }
+        input{
+            margin-right: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        th {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        th:hover {
+            background-color: #ddd;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .top-bar {
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        }
+
+        .cart-link {
+            color: white;
+            text-decoration: none;
+        }
+
+        .cart-link:hover {
+            text-decoration: underline;
+        }
+        .user-info{
+            margin-right: 1%;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="./index.html" class="cart-link">Homepage</a>
+        <a href="./flights.html" class="cart-link">Flight search</a>
+        <a href="./basket.html" class="cart-link">Shopping Cart</a>
+        <div class="user-info" id="userInfo">
+            User info will be displayed here
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Flight Search</h1>
+    <div>
+        <label for="departure">Departure:</label>
+        <select id="departure" name="departure">
+            <option value="GDN" selected="selected">Gdańsk (GDN)</option>
+            <option value="WAW">Warsaw (WAW)</option>
+            <option value="KTW">Katowice (KTW)</option>
+            <option value="POZ">Poznań (POZ)</option>
+            <option value="WRO">Wrocław (WRO)</option>
+        </select>   
+        <label for="destination">Destination:</label>
+        <select id="destination" name="destination">
+            <option value="JNB">Johannesburg (JNB)</option>
+            <option value="SKG">Thessaloniki (SKG)</option>
+            <option value="MJT">Lesbos - Mytilene (MJT)</option>
+            <option value="SPU">Split (SPU)</option>
+            <option value="NBE">Enfidha (NBE)</option>
+            <option value="AYT">Antalya (AYT)</option>
+            <option value="CHQ">Crete - Chania (CHQ)</option>
+            <option value="CFU">Corfu (CFU)</option>
+            <option value="RHO">Rhodes (RHO)</option>
+            <option value="BJV">Bodrum (BJV)</option>
+            <option value="TGD">Podgorica (TGD)</option>
+            <option value="GRO">Girona (GRO)</option>
+            <option value="DJE">Djerba (DJE)</option>
+            <option value="NAP">Naples (NAP)</option>
+            <option value="LTN">London (LTN)</option>
+            <option value="BOJ">Burgas (BOJ)</option>
+            <option value="FCO" selected="selected">Rome (FCO)</option>
+            <option value="VAR">Varna (VAR)</option>
+            <option value="HRG">Hurghada (HRG)</option>
+            <option value="CDG">Paris (CDG)</option>
+            <option value="ICN">Seoul (ICN)</option>
+            <option value="NRT">Tokyo (NRT)</option>
+        </select>
+        <label for="date_start">Start Date:</label>
+        <input type="date" id="date_start" name="date_start" >   
+        <label for="date_end">End Date:</label>
+        <input type="date" id="date_end" name="date_end" >   
+        <button onclick="fetchData()">Search</button>
+    </div>
+    <div id="data"></div>
+
+    <h1>Flight Information</h1>
+    <table id="flightsTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">ID</th>
+                <th onclick="sortTable(1)">Departure</th>
+                <th onclick="sortTable(2)">Destination</th>
+                <th onclick="sortTable(3)">Date</th>
+                <th onclick="sortTable(4)">Departure Time</th>
+                <th onclick="sortTable(5)">Arrival Time</th>
+                <th onclick="sortTable(6)">Price</th>
+                <th style="cursor:default;">Details</th>
+                <th style="cursor:default;">Buy</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be inserted here by JavaScript -->
+        </tbody>
+    </table>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modalText">This is a simple pop-up modal.</p>
+        </div>
+    </div>
+    </div>
+
+
+    <script>
+        const token = localStorage.getItem('access_token'); // Retrieve token from local storage
+        const userInfo = document.getElementById('userInfo'); //place to display user info
+        if (token) {
+            userInfo.textContent = `User logged in`;
+        }
+        else{
+            userInfo.textContent = `User not logged in`;
+        }
+
+        async function fetchData() {
+            const departure = document.getElementById('departure').value;
+            const destination = document.getElementById('destination').value;
+            const date_start = document.getElementById('date_start').value;
+            const date_end = document.getElementById('date_end').value;
+
+            let apiUrl = 'http://127.0.0.1:8000/flight_service/flights/?';
+            if (departure) apiUrl += `departure=${departure}&`;
+            if (destination) apiUrl += `destination=${destination}&`;
+            if (date_start) apiUrl += `date_start=${date_start}&`;
+            if (date_end) apiUrl += `date_end=${date_end}`;
+
+            try {
+                const response = await fetch(apiUrl);
+                const jsonData = await response.json();
+                displayData(jsonData);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayData(data) {
+            const tableBody = document.getElementById('flightsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear any existing rows
+
+            data.forEach(flight => {
+                const row = document.createElement('tr');
+
+                Object.keys(flight).forEach(key => {
+                    if (key !== 'update_data' && key !== 'id_arrival_next_day') {
+                        if (['id', 'departure', 'destination', 'date', 'time_departure', 'time_arrival', 'price'].includes(key)) {
+                            const cell = document.createElement('td');
+                            cell.textContent = flight[key];
+                            row.appendChild(cell);
+                        }
+                    }
+                });
+
+                // Add button to view details
+                const btnCell = document.createElement('td');
+                const button = document.createElement('button');
+                button.className = 'openModalBtn';
+                button.textContent = 'View details';
+                button.addEventListener('click', function() {
+                    openModal(flight);
+                });
+                btnCell.appendChild(button);
+                row.appendChild(btnCell);
+
+                // Add "add to cart" button
+                const btnCell2 = document.createElement('td');
+                const buyButton = document.createElement('button');
+                buyButton.className = 'buyBtn';
+                buyButton.textContent = 'Add to cart';       
+                buyButton.addEventListener('click', function() {
+                    fetch(`http://localhost:8000/booking_service/add_to_cart/?flight_id=${flight.id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                        //body: JSON.stringify({ flight_id: flightId })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            console.log(`Flight with ID ${flight.id} added to cart successfully.`);
+                        } else {
+                            console.error('Failed to add flight to cart.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                });
+                btnCell2.appendChild(buyButton);
+                row.appendChild(btnCell2);
+
+                // Append the row to the table body
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Function to open the modal and set its content
+        function openModal(flight) {
+            const modal = document.getElementById('myModal');
+            const modalText = document.getElementById('modalText');
+
+            modalText.innerHTML = `
+                ID: ${flight.id} <br>
+                <b>departure: ${flight.departure} <br>
+                destination: ${flight.destination} <br></b>
+                date: ${flight.date} <br>
+                departure time: ${flight.time_departure} <br>
+                arrival time: ${flight.time_arrival} <br>
+                flight time: ${flight.flight_time} <br>
+                is dreamliner: ${flight.is_dreamliner} <br>
+                checked baggage: ${flight.checked_baggage} <br>
+                hand luggage: ${flight.hand_luggage} <br>
+                food: ${flight.food} <br><br>
+                price: <b><i>${flight.price}</i></b> <br>
+            `;
+            modal.style.display = 'block';
+        }
+
+        function sortTable(columnIndex) {
+            const table = document.getElementById('flightsTable');
+            const rows = Array.from(table.rows).slice(1); // Skip the header row
+            const isAscending = table.rows[0].cells[columnIndex].classList.toggle('asc');
+
+            rows.sort((rowA, rowB) => {
+                const cellA = rowA.cells[columnIndex].innerText;
+                const cellB = rowB.cells[columnIndex].innerText;
+
+                if (columnIndex === 0 || columnIndex === 6) { // Numerical columns
+                    return isAscending ? cellA - cellB : cellB - cellA;
+                } else if (columnIndex === 3) { // Date column
+                    return isAscending ? new Date(cellA) - new Date(cellB) : new Date(cellB) - new Date(cellA);
+                } else { // Text columns
+                    return isAscending ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                }
+            });
+
+            rows.forEach(row => table.getElementsByTagName('tbody')[0].appendChild(row));
+        }
+
+        // Get the modal
+        const modal = document.getElementById("myModal");
+
+        // Get the <span> element that closes the modal
+        const span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
