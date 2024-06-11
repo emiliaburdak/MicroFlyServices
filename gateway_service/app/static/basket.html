@@ -36,6 +36,15 @@
         .user-info{
             margin-right: 1%;
         }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .cart-item button {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -50,20 +59,9 @@
     <div class="content">
         <h1>Shopping Cart</h1> 
 
-        <!-- Form 3: View Cart -->
         <h2>Cart items</h2>
         <ul id="cartItems"></ul>
-        
 
-        <!-- Form 2: Remove from Cart -->
-        <h2>Remove from Cart</h2>
-        <form id="removeFromCartForm">
-            <label for="cart_item_id">Cart Item ID:</label>
-            <input type="text" id="cart_item_id" name="cart_item_id" required><br><br>
-            <button type="submit">Remove from Cart</button>
-        </form>
-
-        <!-- Form 4: Purchase -->
         <h2>Purchase</h2>
         <form id="purchaseForm">
             <button type="submit">Purchase</button>
@@ -72,75 +70,81 @@
     
     <script>
         const token = localStorage.getItem('access_token'); // Retrieve token from local storage
-        const userInfo = document.getElementById('userInfo'); //place to display user info
+        const userInfo = document.getElementById('userInfo'); // Place to display user info
         if (token) {
             userInfo.textContent = `User logged in`;
-        }
-        else{
+        } else {
             userInfo.textContent = `User not logged in`;
         }
-        
-        document.getElementById('removeFromCartForm').addEventListener('submit', function(event) {
-            event.preventDefault();
 
-            const cartItemId = document.getElementById('cart_item_id').value;
-            fetch(`http://localhost:8000/booking_service/remove_from_cart/?cart_item_id=${cartItemId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
+        async function fetchData(url, options = {}) {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        function createRemoveButton(cartItemId) {
+            const button = document.createElement('button');
+            button.textContent = 'Remove';
+            button.addEventListener('click', async () => {
+                try {
+                    await fetchData(`http://localhost:8000/booking_service/remove_from_cart/?cart_item_id=${cartItemId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    fetchAndUpdateCart(); // Refresh the cart items
+                } catch (error) {
+                    console.error('Error:', error);
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
             });
-        });
+            return button;
+        }
 
-    // Define the function to fetch cart data and update the view
-    function fetchAndUpdateCart() {
-            if (token) {
-                fetch('http://localhost:8000/booking_service/view_cart/', {
-                    method: 'GET',
+        async function fetchAndUpdateCart() {
+            if (!token) {
+                console.warn('User is not logged in');
+                return;
+            }
+
+            try {
+                const cartData = await fetchData('http://localhost:8000/booking_service/view_cart/', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('API response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    const cartItems = document.getElementById('cartItems');
-                    cartItems.innerHTML = ''; // Clear previous items
-                    data.forEach(item => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `1 x Flight with ID ${item.flight_id}`;
-                        cartItems.appendChild(listItem);
-                        console.log(`Data: ${data} Item: ${item} Item id: ${item.flight_id}`);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
                 });
-            } else {
-                console.warn('User is not logged in');
+
+                const cartItems = document.getElementById('cartItems');
+                cartItems.innerHTML = ''; // Clear previous items
+
+                for (const item of cartData) {
+                    const flightDetails = await fetchData(`http://localhost:8000/flight_service/flight_details/?flight_id=${item.flight_id}`);
+
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('cart-item');
+                    listItem.textContent = `1 x Flight with ID ${item.flight_id}. Price: ${flightDetails.price} flight departure: ${flightDetails.departure}  flight destination: ${flightDetails.destination} flight date: ${flightDetails.date}`;
+
+                    const removeButton = createRemoveButton(item.id);
+                    listItem.appendChild(removeButton);
+
+                    cartItems.appendChild(listItem);
+                }
+            } catch (error) {
+                console.error('Error:', error);
             }
         }
 
         document.getElementById('purchaseForm').addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent the default form submission
 
-            const token = localStorage.getItem('access_token');
-            // Make sure the token exists
             if (!token) {
                 console.error('No access token found. Please log in first.');
                 return;
             }
+
             try {
                 const response = await fetch('http://localhost:8000/booking_service/purchase/', {
                     method: 'POST',
@@ -154,18 +158,13 @@
                 }
                 const data = await response.json();
                 console.log('Purchase successful:', data);
-                // You can add more actions here, like redirecting the user or showing a success message
+                fetchAndUpdateCart(); // Refresh the cart items
             } catch (error) {
                 console.error('Error during purchase:', error);
             }
         });
 
-    // Execute the function after page load 
-    window.addEventListener('load', () => {
-            fetchAndUpdateCart();
-            setInterval(fetchAndUpdateCart, 5000); // Refresh cart items every 5 seconds
-        });
-
+        window.addEventListener('load', fetchAndUpdateCart);
     </script>
 </body>
 </html>

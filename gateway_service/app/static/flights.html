@@ -124,7 +124,7 @@
             <option value="MJT">Lesbos - Mytilene (MJT)</option>
             <option value="SPU">Split (SPU)</option>
             <option value="NBE">Enfidha (NBE)</option>
-            <option value="AYT">Antalya (AYT)</option>
+            <option value="AYT" selected="selected">Antalya (AYT)</option>
             <option value="CHQ">Crete - Chania (CHQ)</option>
             <option value="CFU">Corfu (CFU)</option>
             <option value="RHO">Rhodes (RHO)</option>
@@ -135,7 +135,7 @@
             <option value="NAP">Naples (NAP)</option>
             <option value="LTN">London (LTN)</option>
             <option value="BOJ">Burgas (BOJ)</option>
-            <option value="FCO" selected="selected">Rome (FCO)</option>
+            <option value="FCO">Rome (FCO)</option>
             <option value="VAR">Varna (VAR)</option>
             <option value="HRG">Hurghada (HRG)</option>
             <option value="CDG">Paris (CDG)</option>
@@ -214,63 +214,74 @@
 
         function displayData(data) {
             const tableBody = document.getElementById('flightsTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Clear any existing rows
 
-            data.forEach(flight => {
-                const row = document.createElement('tr');
+            if(!Object.keys(data).length){ //check if response is empty
+            tableBody.innerHTML = 'no results found';
+            }
+            else{
+                tableBody.innerHTML = ''; // Clear any existing rows
+                data.forEach(flight => {
+                    const row = document.createElement('tr');
 
-                Object.keys(flight).forEach(key => {
-                    if (key !== 'update_data' && key !== 'id_arrival_next_day') {
-                        if (['id', 'departure', 'destination', 'date', 'time_departure', 'time_arrival', 'price'].includes(key)) {
-                            const cell = document.createElement('td');
-                            cell.textContent = flight[key];
-                            row.appendChild(cell);
+                    Object.keys(flight).forEach(key => {
+                        if (key !== 'update_data' && key !== 'id_arrival_next_day') {
+                            if (['id', 'departure', 'destination', 'date', 'time_departure', 'time_arrival', 'price'].includes(key)) {
+                                const cell = document.createElement('td');
+                                cell.textContent = flight[key];
+                                row.appendChild(cell);
+                            }
                         }
-                    }
-                });
-
-                // Add button to view details
-                const btnCell = document.createElement('td');
-                const button = document.createElement('button');
-                button.className = 'openModalBtn';
-                button.textContent = 'View details';
-                button.addEventListener('click', function() {
-                    openModal(flight);
-                });
-                btnCell.appendChild(button);
-                row.appendChild(btnCell);
-
-                // Add "add to cart" button
-                const btnCell2 = document.createElement('td');
-                const buyButton = document.createElement('button');
-                buyButton.className = 'buyBtn';
-                buyButton.textContent = 'Add to cart';       
-                buyButton.addEventListener('click', function() {
-                    fetch(`http://localhost:8000/booking_service/add_to_cart/?flight_id=${flight.id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        }
-                        //body: JSON.stringify({ flight_id: flightId })
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            console.log(`Flight with ID ${flight.id} added to cart successfully.`);
-                        } else {
-                            console.error('Failed to add flight to cart.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
                     });
-                });
-                btnCell2.appendChild(buyButton);
-                row.appendChild(btnCell2);
 
-                // Append the row to the table body
-                tableBody.appendChild(row);
-            });
+                    // Add button to view details
+                    const btnCell = document.createElement('td');
+                    const button = document.createElement('button');
+                    button.className = 'openModalBtn';
+                    button.textContent = 'View details';
+                    button.addEventListener('click', function() {
+                        openModal(flight);
+                    });
+                    btnCell.appendChild(button);
+                    row.appendChild(btnCell);
+
+                    // Add "add to cart" button
+                    const btnCell2 = document.createElement('td');
+                    const buyButton = document.createElement('button');
+                    buyButton.className = 'buyBtn';
+                    buyButton.textContent = 'Add to cart';       
+                    buyButton.addEventListener('click', function() {
+
+                        if(token){
+                            fetch(`http://localhost:8000/booking_service/add_to_cart/?flight_id=${flight.id}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            }
+                            //body: JSON.stringify({ flight_id: flightId })
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    console.log(`Flight with ID ${flight.id} added to cart successfully.`);
+                                } else {
+                                    console.error('Failed to add flight to cart.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                        }
+                        else{
+                            alert("User not logged in");
+                        }
+                    });
+                    btnCell2.appendChild(buyButton);
+                    row.appendChild(btnCell2);
+
+                    // Append the row to the table body
+                    tableBody.appendChild(row);
+                });
+            }
         }
 
         // Function to open the modal and set its content
