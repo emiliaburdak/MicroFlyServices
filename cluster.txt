@@ -1,13 +1,19 @@
 Folder name/prefix:
 HPDS_167086
 
-Port:
-167080
+167086
+172294
+185385
+Ports:
+16708
+17229
+18538
+16709
+17230
+18539
 
+
+ssh student-swarm01.maas
 mkdir HPDS_167086
 cd HPDS_167086
-sudo docker build https://github.com/emiliaburdak/MicroFlyServices:cluster -t 10.40.71.55:5000/HPDS_167086
 
-POSTRESQL db server port: 5432 check it is running by issuing “sudo docker service ls” command.
-The database name should be equal to the PREFIX described above. There is a gui available that is running on port 9080. 
-The password is student and the user is postgres
