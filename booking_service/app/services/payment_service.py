@@ -18,7 +18,7 @@ async def handle_payment_request(msg: str, db: Session = Depends(get_db)):
     new_payment_status = await simulate_payment_status()
     await update_payment_status_in_db(msg['user_id'], msg['purchase_ids'], new_payment_status, db)
     if new_payment_status == "PaymentFailed":
-        await recreate_cart(db, msg)
+        await recreate_cart(msg, db)
     elif new_payment_status == "PaymentSucceeded":
         await send_broadcast_message_to_kafka()
         await send_message_to_kafka_for_info_collector(msg['flights_ids'])
@@ -33,15 +33,15 @@ async def send_message_to_kafka_for_info_collector(flight_ids: List[int]):
     await send_to_kafka(topic='flight-info-collector', msg=flight_ids)
 
 
-async def recreate_cart(db, msg):
-    for purchase_id in msg.purchase_ids:
+async def recreate_cart(msg, db):
+    for purchase_id in msg['purchase_ids']:
         purchased_flight = db.query(PurchasedFlight).filter(
-            PurchasedFlight.user_id == msg.user_id,
+            PurchasedFlight.user_id == msg['user_id'],
             PurchasedFlight.id == purchase_id
         ).first()
         flight_id = purchased_flight.flight_id
 
-        await add_flight_to_cart(get_db(), flight_id, msg.user_id)
+        await add_flight_to_cart(db, flight_id, msg['user_id'])
 
 
 async def simulate_payment_status() -> str:
