@@ -1,31 +1,91 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>System Śledzenia Lotów - Użytkownik</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Offers</title>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <style>
+        body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.top-bar {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+    font-size: 18px;
+}
+
+.nav-links a:hover {
+    text-decoration: underline;
+}
+
+.main-content {
+    text-align: center;
+    margin: 50px 20px;
+}
+
+.main-content h1 {
+    font-size: 36px;
+    margin-bottom: 10px;
+}
+
+.main-content p {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+
+.b {
+    padding: 12px;
+    margin: 5px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.b:hover {
+    background-color: #555;
+}
+    </style>
 </head>
 <body>
-    <h1>System Śledzenia Lotów</h1>
+    <header class="top-bar">
+        <div class="logo">FlightFinder</div>
+        <nav class="nav-links">
+            <a href="./register.html">Register</a>
+            <a href="./login.html">Login</a>
+        </nav>
+    </header>
 
-    <!-- Formularz rejestracji -->
-    <h2>Rejestracja</h2>
-    <form id="registerForm" method="POST" onsubmit="return false;">
-        <input type="text" id="username" placeholder="Nazwa użytkownika" required>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Hasło" required>
-        <button type="button" onclick="registerUser()">Zarejestruj się</button>
-    </form>
-    <div id="registerResult"></div>
+    <main class="main-content">
+        <h1>Find Your Perfect Flight</h1>
+        <p>Search and book flights with the best offers!</p>
+        <a class="b" href="./flights.html">Search Flights</a>
+    </main>
 
-    <!-- Formularz logowania -->
-    <h2>Logowanie</h2>
-    <form id="loginForm" method="POST" onsubmit="return false;">
-        <input type="text" id="loginUsername" placeholder="Nazwa użytkownika" required>
-        <input type="password" id="loginPassword" placeholder="Hasło" required>
-        <button type="button" onclick="loginUser()">Zaloguj się</button>
-    </form>
-    <div id="loginResult"></div>
-
-    <script src="app.js"></script>
 </body>
 </html>

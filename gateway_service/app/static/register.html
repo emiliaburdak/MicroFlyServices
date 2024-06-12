@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <style>
+        body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    }
+
+    .top-bar {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .nav-links a {
+        color: white;
+        text-decoration: none;
+        margin-left: 20px;
+        font-size: 18px;
+    }
+
+    .nav-links a:hover {
+        text-decoration: underline;
+    }
+
+    .main-content {
+        text-align: center;
+        margin: 50px 20px;
+    }
+
+    .main-content h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+
+    .main-content p {
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    form input, form button {
+        padding: 10px;
+        margin: 5px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 80%;
+        max-width: 400px;
+    }
+
+    form button {
+        background-color: #333;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    form button:hover {
+        background-color: #555;
+    }
+
+    .form-link {
+        margin-top: 20px;
+        font-size: 16px;
+    }
+
+    .form-link a {
+        color: #333;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    .form-link a:hover {
+        text-decoration: underline;
+    }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div class="logo">FlightFinder</div>
+        <nav class="nav-links">
+            <a href="./login.html">Login</a>
+            <a href="./register.html">Register</a>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <h1>Register</h1>
+        <form id="registerForm" action="http://localhost:8000/user_service/register" method="POST">
+            <input type="text" id="username" name="username" placeholder="Username" required>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <button type="submit">Register</button>
+        </form>
+        <p class="form-link">Already registered? <a href="./login.html">Log in</a></p>
+    </main>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+
+            fetch('http://localhost:8000/user_service/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.username){
+                    console.log('Success:', data);
+                    window.location.replace("./login.html");
+                }
+                else{
+                    alert("Error. Email or username already registered");
+                }
+            })
+            .catch(error => {
+                alert("Error. Email or username already registered");
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

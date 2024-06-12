@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 from typing import List
-
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request, HTTPException, WebSocket, WebSocketDisconnect
 import httpx
 
@@ -10,7 +10,18 @@ from fastapi.staticfiles import StaticFiles
 from .kafka_utils import kafka_router
 
 app = FastAPI(lifespan=kafka_router.lifespan_context)
+
+# CORS settings
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(kafka_router)
+
 
 SERVICE_URLS = {
     "user_service": "http://user_service:8003",
