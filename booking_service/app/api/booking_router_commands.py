@@ -64,7 +64,8 @@ async def purchase(user_id: int = Depends(get_current_user_id), db: Session = De
         "type": "ProcessPayment",
         "timestamp": datetime.utcnow().isoformat(),
         "user_id": user_id,
-        "purchase_ids": purchase_ids
+        "purchase_ids": purchase_ids,
+        "flights_ids": flights_ids
     })
     await send_to_kafka(topic='payment-request', msg=process_payment_request)
 
