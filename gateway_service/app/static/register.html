@@ -134,11 +134,16 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Success:', data);
-                window.location.replace("./login.html");
+                if(data.username){
+                    console.log('Success:', data);
+                    window.location.replace("./login.html");
+                }
+                else{
+                    alert("Error. Email or username already registered");
+                }
             })
             .catch(error => {
-                alert("Error");
+                alert("Error. Email or username already registered");
                 console.error('Error:', error);
             });
         });

@@ -116,28 +116,38 @@
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(event) {
-        event.preventDefault();
+            event.preventDefault();
 
-        const formData = new FormData();
-        formData.append('username', document.getElementById('username').value);
-        formData.append('password', document.getElementById('password').value);
+            const formData = new FormData();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
 
-        fetch('http://localhost:8000/user_service/login', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-                console.log('Success:', data);
-                // Save token to local storage
-                localStorage.setItem('access_token', data.access_token);
-                window.location.replace("./index.html");
+            fetch('http://localhost:8000/user_service/login', {
+                method: 'POST',
+                body: formData
             })
-        .catch(error => {
-            alert("Creditensials provided are incorrect");
-            console.error('Error:', error);
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Incorrect username or password');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if(data.access_token){
+                    console.log('Success:', data);
+                    // Save token to local storage
+                    localStorage.setItem('access_token', data.access_token);
+                    window.location.replace("./index.html");
+                }
+                else{
+                    alert("Credentials provided are incorrect");
+                }
+            })
+            .catch(error => {
+                alert("Credentials provided are incorrect");
+                console.error('Error:', error);
+            });
         });
-    });
 
     /*
     alternative (also working) format of sending POST request:
