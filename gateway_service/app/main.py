@@ -31,6 +31,7 @@ SERVICE_URLS = {
 
 app.mount("/static", StaticFiles(directory="app/static", html=True), name="static")
 destinations = defaultdict(int)
+preferences = defaultdict(int)
 
 
 @app.api_route("/{service}/{path}", methods=["GET", "POST", "PUT", "DELETE"])
@@ -98,19 +99,27 @@ async def broadcast_purchases_info(msg: str):
 @kafka_router.subscriber("flight-info-collector")
 async def collect_purchased_flights_info(flight_ids: List[int]):
     global destinations
+    global preferences
     for flight_id in flight_ids:
-        fetched_flight = await fetch_destination_data(flight_id)
-        destinations[fetched_flight] += 1
+        destination, baggage, food, dreamliner = await fetch_flight_data(flight_id)
+        destinations[destination] += 1
+        if baggage:
+            preferences["checked_baggage"] += 1
+        if food:
+            preferences["food"] += 1
+        if dreamliner:
+            preferences["is_dreamliner"] += 1
         await chart_manager.broadcast(json.dumps(dict(destinations)))
+        await chart_manager.broadcast(json.dumps(dict(preferences)))
 
 
-async def fetch_destination_data(flight_id):
+async def fetch_flight_data(flight_id):
     url = f"http://127.0.0.1:8000/flight_service/flight_details?flight_id={flight_id}"
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, params={"flight_id": flight_id})
             response.raise_for_status()
-            return response.json()["destination"]
+            return response.json()["destination"], response.json()["checked_baggage"], response.json()["food"], response.json()["is_dreamliner"]
         except httpx.HTTPStatusError as e:
             raise HTTPException(status_code=e.response.status_code, detail="Failed to fetch flight details")
         except httpx.RequestError as e:
