@@ -94,6 +94,23 @@
         .user-info{
             margin-right: 1%;
         }
+        /* Add styles for the notification pop-up */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #44c767;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #notification.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
@@ -179,6 +196,9 @@
         </div>
     </div>
     </div>
+
+    <!-- Notification placeholder -->
+    <div id="notification"></div>
 
 
     <script>
@@ -344,6 +364,28 @@
                 modal.style.display = "none";
             }
         }
+
+        const socket = new WebSocket('ws://localhost:8000/ws');
+        socket.onmessage = function(event) {
+            const message = event.data;
+            console.log(message); // You can replace this with a custom popup implementation
+            showNotification(message);
+        };
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 500); // Matches the CSS transition duration
+            }, 4000); // Notification display duration
+        }
+
     </script>
 </body>
 </html>
