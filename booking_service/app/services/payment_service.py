@@ -1,5 +1,6 @@
 import json
 import random
+from typing import List
 
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -10,7 +11,6 @@ from ..models import PurchasedFlight, CartItem
 from ..services.kafka_events_utils import kafka_router, send_to_kafka
 
 
-# consume event from kafka
 @kafka_router.subscriber("payment-request")
 async def handle_payment_request(msg: str, db: Session = Depends(get_db)):
     msg = json.loads(msg)
@@ -21,11 +21,16 @@ async def handle_payment_request(msg: str, db: Session = Depends(get_db)):
         await recreate_cart(db, msg)
     elif new_payment_status == "PaymentSucceeded":
         await send_broadcast_message_to_kafka()
+        await send_message_to_kafka_for_info_collector(msg['flights_ids'])
 
 
 async def send_broadcast_message_to_kafka():
     broadcast_message = f"Someone just bought the flight! Hurry up, buy one for yourself too!"
     await send_to_kafka(topic='purchases-info', msg=broadcast_message)
+
+
+async def send_message_to_kafka_for_info_collector(flight_ids: List[int]):
+    await send_to_kafka(topic='flight-info-collector', msg=flight_ids)
 
 
 async def recreate_cart(db, msg):
