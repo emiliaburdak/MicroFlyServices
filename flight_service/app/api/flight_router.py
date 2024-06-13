@@ -21,8 +21,7 @@ def get_db():
 
 
 @router.get("/flights/", response_model=List[FlightSchema])
-def search(departure: str, destination: str, date_start: date, date_end: date,
-           db: Session = Depends(get_db)):
+def search(departure: str, destination: str, date_start: date, date_end: date, db: Session = Depends(get_db)):
     year_months_to_check = extract_months(date_start, date_end)
     for year, month in year_months_to_check:
         existing_flight = db.query(Flight).filter(

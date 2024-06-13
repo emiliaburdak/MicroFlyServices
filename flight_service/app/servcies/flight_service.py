@@ -1,3 +1,4 @@
+import random
 from typing import List
 import requests
 from sqlalchemy.orm import Session
@@ -51,6 +52,7 @@ def fetch_flights(departure: str, destination: str, month: int, year: int) -> Li
             data = response.json()
             for item in data:
                 for ticket in item["Bilety"]:
+                    food, checked_baggage, is_dreamliner = simulate_preferences()
                     flight = Flight(
                         departure=ticket["Wylot"]["Iata"],
                         destination=ticket["Przylot"]["Iata"],
@@ -61,10 +63,10 @@ def fetch_flights(departure: str, destination: str, month: int, year: int) -> Li
                         ticket["Przylot"]["Godzina"] else None,
                         flight_time=ticket.get("CzasLotu", None),
                         id_arrival_next_day=ticket["Wylot"].get("Przesuniecie", None),
-                        is_dreamliner=ticket["CzyDreamliner"],
-                        checked_baggage=bool(ticket["BagazRejestrowany"]),
+                        is_dreamliner=is_dreamliner,
+                        checked_baggage=checked_baggage,
                         hand_luggage=bool(ticket["BagazPodreczny"]),
-                        food=ticket["Wyzywienie"],
+                        food=food,
                         price=ticket["Cena"],
                         update_data=datetime.utcnow()
                     )
@@ -76,6 +78,13 @@ def fetch_flights(departure: str, destination: str, month: int, year: int) -> Li
         print(f"An error occurred: {e}")
 
     return flights
+
+
+def simulate_preferences():
+    food = random.choices([True, False], weights=[0.5, 0.5])[0]
+    checked_baggage = random.choices([True, False], weights=[0.7, 0.3])[0]
+    is_dreamliner = random.choices([True, False], weights=[0.2, 0.8])[0]
+    return food, checked_baggage, is_dreamliner
 
 
 def save_flights_to_database(flights, db: Session):
