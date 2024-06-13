@@ -118,6 +118,7 @@
         <a href="./index.html" class="cart-link">Homepage</a>
         <a href="./flights.html" class="cart-link">Flight search</a>
         <a href="./basket.html" class="cart-link">Shopping Cart</a>
+        <a href="./stats.html" class="cart-link">Statistics</a>
         <div class="user-info" id="userInfo">
             User info will be displayed here
         </div>
@@ -152,12 +153,10 @@
             <option value="NAP">Naples (NAP)</option>
             <option value="LTN">London (LTN)</option>
             <option value="BOJ">Burgas (BOJ)</option>
-            <option value="FCO">Rome (FCO)</option>
             <option value="VAR">Varna (VAR)</option>
             <option value="HRG">Hurghada (HRG)</option>
-            <option value="CDG">Paris (CDG)</option>
-            <option value="ICN">Seoul (ICN)</option>
-            <option value="NRT">Tokyo (NRT)</option>
+            <option value="BKK">Bangkok (BKK)</option>
+            <option value="PQC">Phu Quoc (PQC)</option>
         </select>
         <label for="date_start">Start Date:</label>
         <input type="date" id="date_start" name="date_start" >   
@@ -236,7 +235,7 @@
             const tableBody = document.getElementById('flightsTable').getElementsByTagName('tbody')[0];
 
             if(!Object.keys(data).length){ //check if response is empty
-            tableBody.innerHTML = 'no results found';
+            tableBody.innerHTML = '<center><p>No results found</p></center>';
             }
             else{
                 tableBody.innerHTML = ''; // Clear any existing rows

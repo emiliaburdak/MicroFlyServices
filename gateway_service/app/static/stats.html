@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics</title>
+    <style>
+        body{
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #f5f5f5;
+        }
+        .content{
+            padding: 2%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            height: 100vh;
+        }
+        .top-bar {
+        background-color: #333;
+        color: white;
+        padding: 10px;
+        position: fixed;
+        width: 100%;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1000;
+        }
+
+        .cart-link {
+            color: white;
+            text-decoration: none;
+        }
+
+        .cart-link:hover {
+            text-decoration: underline;
+        }
+        .user-info{
+            margin-right: 1%;
+        }
+        canvas {
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="./index.html" class="cart-link">Homepage</a>
+        <a href="./flights.html" class="cart-link">Flight search</a>
+        <a href="./basket.html" class="cart-link">Shopping Cart</a>
+        <a href="./stats.html" class="cart-link">Statistics</a>
+        <div class="user-info" id="userInfo">
+            ...
+        </div>
+    </div>
+    <div class="content">
+        <h1>Preferences Statistics</h1>
+        <canvas id="chart1"></canvas>
+        <canvas id="chart2"></canvas>
+    </div>
+    
+
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        const token = localStorage.getItem('access_token'); // Retrieve token from local storage
+        const userInfo = document.getElementById('userInfo'); // Place to display user info
+        if (token) {
+            userInfo.textContent = `User logged in`;
+        } else {
+            userInfo.textContent = `User not logged in`;
+        }
+
+        // Initialize WebSocket connection
+        const socket = new WebSocket('ws://localhost:8000/ws/flights_chart');
+        
+        // Initialize charts
+        const ctx1 = document.getElementById('chart1').getContext('2d');
+        const ctx2 = document.getElementById('chart2').getContext('2d');
+
+        const chart1 = new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: [], // Labels for the X-axis
+                datasets: [{
+                    label: 'Destination preferences',
+                    data: [], // Data for the first dataset
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        const chart2 = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: [], // Labels for the X-axis
+                datasets: [{
+                    label: 'Extras preferences',
+                    data: [], // Data for the second dataset
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Objects to store incoming data
+        let dataset1 = {};
+        let dataset2 = {};
+
+        // Flag to track which dataset is being updated
+        let currentDataset = 1;
+
+        // Handle incoming WebSocket messages
+        socket.onmessage = function(event) {
+            const message = JSON.parse(event.data);
+            console.log(message);
+
+            if (currentDataset === 1) {
+                dataset1 = message;
+                updateChart1();
+                currentDataset = 2; // Switch to the second dataset
+            } else {
+                dataset2 = message;
+                updateChart2();
+                currentDataset = 1; // Switch back to the first dataset
+            }
+        };
+
+        // Function to update the first chart
+        function updateChart1() {
+            const labels = Object.keys(dataset1);
+            chart1.data.labels = labels;
+            chart1.data.datasets[0].data = labels.map(label => dataset1[label]);
+
+            // Update chart
+            chart1.update();
+        }
+
+        // Function to update the second chart
+        function updateChart2() {
+            const labels = Object.keys(dataset2);
+            chart2.data.labels = labels;
+            chart2.data.datasets[0].data = labels.map(label => dataset2[label]);
+
+            // Update chart
+            chart2.update();
+        }
+
+
+        // Handle WebSocket errors
+        socket.onerror = function(error) {
+            console.error('WebSocket Error: ', error);
+        };
+
+        // Handle WebSocket connection close
+        socket.onclose = function(event) {
+            if (event.wasClean) {
+                console.log(`WebSocket closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+                console.error('WebSocket connection died');
+            }
+        };
+
+        window.addEventListener('load', updateChart1);
+        window.addEventListener('load', updateChart2);
+    </script>
+</body>
+</html>
